@@ -1,3 +1,5 @@
+https://github.com/mutantbob/pycharm-blender
+
 This project includes a script that uses reflection to extract
 blender's python API from a running instance of blender and store it
 in .py files usable by the pycharm IDE to aid in code completion.
