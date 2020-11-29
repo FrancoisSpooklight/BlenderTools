@@ -5,8 +5,8 @@ from mathutils import Vector
 bl_info = {
    "name": "catcherGenerator",
    "author": "Spooklight Studio",
-   "version": (1, 0, 0),
-   "blender": (2, 78, 0),
+   "version": (2, 0, 0),
+   "blender": (2, 91, 0),
    "location": "",
    "description": "Generate a rig catcher based on a rigify rig",
    "warning": "",
@@ -33,7 +33,7 @@ class catcherGenerator:
         defBones = []
 
         # Iteration
-        bpy.context.scene.objects.active = rig
+        bpy.context.view_layer.objects.active = rig
         bpy.ops.object.mode_set(mode='EDIT')
 
         for bone in bones:
@@ -66,11 +66,11 @@ class catcherGenerator:
         else:
             catcherObject = bpy.data.objects['rig_catcher']
 
-        if bpy.context.scene.objects.get('rig_catcher') is None:
-            bpy.context.scene.objects.link(catcherObject)
+        if bpy.context.view_layer.objects.get('rig_catcher') is None:
+            bpy.context.scene.collection.objects.link(catcherObject)
 
-        catcher = bpy.context.scene.objects['rig_catcher']
-        bpy.context.scene.objects.active = catcher
+        catcher = bpy.context.view_layer.objects['rig_catcher']
+        bpy.context.view_layer.objects.active = catcher
         bpy.ops.object.mode_set(mode='EDIT')
 
         # Iteration
@@ -139,8 +139,8 @@ class catcherGenerator:
                 
 
 
-class generateCatcherOp(bpy.types.Operator, catcherGenerator):
-    bl_idname = 'catcher.generate'
+class AP_OT_generate_catcher(bpy.types.Operator, catcherGenerator):
+    bl_idname = 'ap.generate_catcher'
     bl_label = 'Generate Catcher'
 
     @classmethod
@@ -157,13 +157,17 @@ class generateCatcherOp(bpy.types.Operator, catcherGenerator):
         return {'FINISHED'}
 
 
-def register():
-    bpy.utils.register_class(generateCatcherOp)
+classes = (
+    AP_OT_generate_catcher,
+)
 
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
 def unregister():
-    bpy.utils.unregister_class(generateCatcherOp)
-
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
 
 if __name__ == "__main__":
     register()
