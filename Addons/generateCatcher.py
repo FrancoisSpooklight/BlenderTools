@@ -1,173 +1,216 @@
 import bpy
 from mathutils import Vector
 
-
 bl_info = {
-   "name": "catcherGenerator",
-   "author": "Spooklight Studio",
-   "version": (2, 0, 0),
-   "blender": (2, 91, 0),
-   "location": "",
-   "description": "Generate a rig catcher based on a rigify rig",
-   "warning": "",
-   "wiki_url": "",
-   "tracker_url": "",
-   "category": "Rigging"}
+    "name": "catcherGenerator",
+    "author": "Spooklight Studio",
+    "version": (2, 0, 0),
+    "blender": (2, 91, 0),
+    "location": "ADD OBJECT > Armature",
+    "description": "Generate a rig catcher based on a rigify rig",
+    "warning": "",
+    "wiki_url": "",
+    "tracker_url": "",
+    "category": "Rigging"}
 
 
-class catcherGenerator:
+class CatcherGenerator:
 
-    def collectDefBones(self, rig):
-        '''
-        Collects all the deformation bose.
-        #Assuming the given object is a rigify one
-        (tested in the operator class)
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def collect_def_bones(rig):
+        """
+        Collects all the deformation bones.
 
         Return an array of objects with these information per elements:
-            Bone Name, Head Position, Tail Position, Bone Roll
+            Bone Name, Head Position, Tail Position
+            Bone Orientation Matrix, is Bone connected, Bone Parent.
 
-        '''
+        Input: rigObj: un objet Armature Rigify
+
+        """
+
+        # Context
+        bpy.ops.object.mode_set(mode='EDIT')
 
         # Variables
         bones = rig.data.edit_bones
-        defBones = []
+        def_bones = []
 
         # Iteration
-        bpy.context.view_layer.objects.active = rig
-        bpy.ops.object.mode_set(mode='EDIT')
+        # bpy.context.view_layer.objects.active = rigObj
 
         for bone in bones:
+
+            # print (bone.name) # DEBUG
+
+            # Passer DEF et CAT en param !!!
             if "DEF" in bone.name:
-                defBones.append([bone.name, bone.head, bone.tail, bone.roll])
+                bone_infos = ['CAT' + bone.name[3:], bone.head, bone.tail, bone.matrix, bone.use_connect]
 
-        bpy.ops.object.mode_set(mode='OBJECT')
-        
-        print ("OUT collect ", defBones)
+                # parenting
+                parent = bone.parent
 
-        return defBones
+                # prevent non-parented bones
+                if bone.parent is None:
+                    print(bone.name, "Has no parent !!!")
+                    bone_infos.append('')
+                # Special Parent Bones
+                elif 'DEF' not in parent.name:
+                    # Try 3 Parent levels
+                    for i in reversed(range(10)):  # Parameter !!!
+                        # If no parent, break
+                        if parent is None:
+                            bone_infos.append('')
+                            print(bone.name, "Has no primal parent !!!")
+                            break
 
-    def createCatBones(self, rig, defBones):
-        '''
+                        # If this parent is a DEF Bone
+                        if bones.get('DEF' + parent.name[3:]) is not None:
+                            # but has the same name than the child
+                            if 'DEF' + parent.name[3:] == bone.name:
+                                # Iterate
+                                parent = parent.parent
+                                continue
+                            else:
+                                # There we are! Register and break
+                                bone_infos.append('CAT' + parent.name[3:])
+                                break
+                        elif i == 0:
+                            # Nothing interesting. Stop trying.
+                            print(bone.name, "no DEF parent found !!!")
+                            bone_infos.append('')
+                            break
+
+                        else:
+                            # iterate
+                            parent = parent.parent
+
+                # Regular Bone
+                else:
+                    bone_infos.append('CAT' + parent.name[3:])
+
+                # Collapsing
+                def_bones.append(bone_infos)
+
+        return def_bones
+
+    @staticmethod
+    def create_cat_bones(def_bones):
+        """
         Create a new armature and a corresponding object at (0,0,0)
         Create a bone for each one in the array
         Fits each bone to its heir
         Create a constraint for each new bone fiting its heir.
-        '''
+        """
 
-        #print ("IN create ", defBones)
         # Create new armature, checking if each component already exists
         if bpy.data.armatures.get('rig_catcher') is None:
-            catcherArmature = bpy.data.armatures.new('rig_catcher')
+            catcher_armature = bpy.data.armatures.new('rig_catcher')
         else:
-            catcherArmature = bpy.data.armatures['rig_catcher']
+            catcher_armature = bpy.data.armatures['rig_catcher']
 
         if bpy.data.objects.get('rig_catcher') is None:
-            catcherObject = bpy.data.objects.new('rig_catcher', catcherArmature)
+            catcher_object = bpy.data.objects.new('rig_catcher', catcher_armature)
         else:
-            catcherObject = bpy.data.objects['rig_catcher']
+            catcher_object = bpy.data.objects['rig_catcher']
 
         if bpy.context.view_layer.objects.get('rig_catcher') is None:
-            bpy.context.scene.collection.objects.link(catcherObject)
+            bpy.context.scene.collection.objects.link(catcher_object)
 
         catcher = bpy.context.view_layer.objects['rig_catcher']
         bpy.context.view_layer.objects.active = catcher
-        bpy.ops.object.mode_set(mode='EDIT')
 
         # Iteration
-        for bone in defBones:
-
-            print (bone)
-
+        for bone in def_bones:
             # CreateBone
-            bpy.ops.object.mode_set(mode='EDIT')
-            
-            catBone = catcher.data.edit_bones.new('CAT'+bone[0][3:])  # replace "DEF" in name by "CAT"
-            catBone.head = bone[1]
-            catBone.tail = bone[2]
-            catBone.roll = bone[3]
+            bpy.ops.object.mode_set(mode='EDIT')  # ????????? pour la boucle????
 
-            # Create Constraint
-            bpy.ops.object.mode_set(mode='POSE')
-            drived = catcher.pose.bones.get(catBone.name)
+            cat_bone = catcher.data.edit_bones.new(bone[0])  # replace "DEF" in name by "CAT"
 
-            constraint = drived.constraints.new('COPY_TRANSFORMS')
-            constraint.target = rig
-            constraint.subtarget = bone[0]
+            # repoint
+            # cat_bone = catcher.data.edit_bones.get(bone[0])  # ????
 
+            cat_bone.head = bone[1]
+            cat_bone.tail = bone[2]
+            cat_bone.matrix = bone[3]
 
         return catcher
 
-    def consolidateRig(self, catcher):
-        '''
-        Parente les bones ayant une tail et un head commun
-        '''
+    @staticmethod
+    def constraint_rig(rig, catcher):
+        """
+        Create constraints to link Catcher moves to original rig
+        """
+
+        bpy.ops.object.mode_set(mode='POSE')
+        drived_bones = catcher.pose.bones
+
+        for drived in drived_bones:
+            constraint = drived.constraints.new('COPY_TRANSFORMS')
+            constraint.target = rig
+            constraint.subtarget = 'DEF' + drived.name[3:]
+
+    @staticmethod
+    def consolidate_rig(catcher, def_bones):
+        """
+        reparente les bones
+        """
 
         bpy.ops.object.mode_set(mode='EDIT')
 
-        for bone in catcher.data.edit_bones:
-            
-            # Parente les bones de fin de chaine.
-            if "CAT-palm" in bone.name or "CAT-thumb.01" in bone.name and bone.name[-1:] is not "2":
-                if ".R" in bone.name:
-                    bone.parent = catcher.data.edit_bones.get('CAT-hand.R')
-                    continue
-                else:
-                    bone.parent = catcher.data.edit_bones.get('CAT-hand.L')
-                    continue
+        for bone in def_bones:
+            print("parenting", bone[0], "to", bone[5])
 
-            if "CAT-thigh.01" in bone.name:
-                bone.parent = catcher.data.edit_bones.get('CAT-hips')
-                continue
+            # Search child bone from defBones
+            child = catcher.data.edit_bones.get(bone[0])
+            # Search parent bone from defBones
+            parent = catcher.data.edit_bones.get(bone[5])
 
-            if "CAT-upper_arm.01.L" in bone.name:
-                bone.parent = catcher.data.edit_bones.get('CAT-shoulder.L')
-                continue
-            if "CAT-upper_arm.01.R" in bone.name:
-                bone.parent = catcher.data.edit_bones.get('CAT-shoulder.R')
-                continue
-            
-            if "CAT-shoulder" in bone.name:
-                bone.parent = catcher.data.edit_bones.get('CAT-chest')
-                continue
-
-            #parente les bones ayant une tail et un head en commun
-            for otherBone in catcher.data.edit_bones:
-                if bone.head == otherBone.tail:
-                    bone.parent = otherBone
-                    bone.use_connect = True
-                    break
-                
+            child.parent = parent
+            child.use_connect = bone[4]
 
 
-class AP_OT_generate_catcher(bpy.types.Operator, catcherGenerator):
+class GenerateCatcher(bpy.types.Operator, CatcherGenerator):
     bl_idname = 'ap.generate_catcher'
-    bl_label = 'Generate Catcher'
+    bl_label = 'Generate Catcher from Rigify'
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(self, context):
-        return bpy.context.active_object.data.get("rig_id") is not None and context.active_object.mode == 'EDIT'
+        return bpy.context.active_object.data.get("rig_id") is not None
 
     def execute(self, context):
-        #for i in range(0,3):
-        #    print (self.collectDefBones(bpy.context.object))
-        
         target = bpy.context.object
-        catcher = self.createCatBones(bpy.context.object, self.collectDefBones(bpy.context.object))
-        self.consolidateRig(catcher)
+        def_bones = self.collect_def_bones(bpy.context.object)
+        catcher = self.create_cat_bones(def_bones)
+        self.consolidate_rig(catcher, def_bones)
+        self.constraint_rig(target, catcher)
         return {'FINISHED'}
 
 
 classes = (
-    AP_OT_generate_catcher,
+    GenerateCatcher,
 )
+
+
+def menu_func(self, context):
+    self.layout.operator(GenerateCatcher.bl_idname, icon='OUTLINER_OB_ARMATURE')
+
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+    bpy.types.VIEW3D_MT_armature_add.append(menu_func)
+
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
+    bpy.types.VIEW3D_MT_armature_add.remove(menu_func)
+
 
 if __name__ == "__main__":
     register()
