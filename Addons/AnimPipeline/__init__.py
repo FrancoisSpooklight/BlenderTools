@@ -18,12 +18,12 @@ from animTools import apUtilities
 
 # Add-on Informations
 bl_info = {
-   "name": "Kouji Animation Tools",
+   "name": "Animation Pipeline",
    "author": "Spooklight Studio",
-   "version": (2, 4, 0),
-   "blender": (2, 79, 0),
+   "version": (3, 0, 0),
+   "blender": (2, 8, 0),
    "location": "",
-   "description": "Tools to manage and export Kouji's animations",
+   "description": "Tools to manage and export Animations",
    "warning": "",
    "wiki_url": "",
    "tracker_url": "",
