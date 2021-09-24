@@ -465,9 +465,9 @@ class exportAllActions(exportAnim, animPipeline, Operator):
 # UI
 class AnimationPanel(Panel, animPipeline):
     bl_label = "Animation Pipeline"
-    bl_space_type = "VIEW_3D"
-    bl_category = "Spooklight"
-    bl_region_type = "TOOLS"
+    bl_region_type = "UI"
+    bl_category = "Animation Pipeline"
+    bl_label = "Anim"
 
     @classmethod
     def poll(self, context):
@@ -484,7 +484,7 @@ class AnimationPanel(Panel, animPipeline):
         # SUBSCRIPTION
         if not (ap_settings.ap_seed or ap_settings.ap_prop or ap_settings.ap_leaf or ap_settings.ap_catcher):
             layout = self.layout
-            label = layout.label('Initialisation')
+            label = layout.label(text="Initialisation")
             row = layout.row()
             seed_button = row.operator("ap.initseed", text="initialize as seed").ap_target = bpy.context.active_object.name
             row = self.layout.row()
@@ -495,18 +495,18 @@ class AnimationPanel(Panel, animPipeline):
             catcher_button = row.operator("ap.initcatcher", text="initialize as catcher").ap_target = bpy.context.active_object.name
         else:
             layout = self.layout
-            label = layout.label('Unsubscribe')
+            label = layout.label(text="Unsubscribe")
             row = layout.row()
             uninit_button = row.operator("ap.uninit", text="uninitialize").ap_target = bpy.context.active_object.name
 
         # SEED and animation management
         if ap_settings.ap_seed:
             layout = self.layout
-            label = layout.label("Initialized as a Seed")
+            label = layout.label(text="Initialized as a Seed")
 
             # Animation
             box = layout.box()
-            box.label("Animation :")
+            box.label(text="Animation :")
             row = box.row()
             row.prop(obj.animation_data, "action")
             row = box.row()
@@ -514,7 +514,7 @@ class AnimationPanel(Panel, animPipeline):
 
             # Props
             box = layout.box()
-            box.label("Props Linked :")
+            box.label(text="Props Linked :")
 
             if anim.action is not None:
                 for i in range(4):
@@ -522,12 +522,12 @@ class AnimationPanel(Panel, animPipeline):
                     prop = bpy.context.object.animation_data.action.animPipeline.get("ap_prop_"+str(i+1))
                     if prop == "" or prop is None:
                         break
-                    label = row.label(prop)
+                    label = row.label(text=prop)
                     row.operator("ap.unlinkprop", text="", icon="ZOOMOUT", emboss=False).prop_target = i
 
             # Version
             box = layout.box()
-            box.label("Version: " + str(round(ap_settings.ap_rig_version, 1)))
+            box.label(text="Version: " + str(round(ap_settings.ap_rig_version, 1)))
             if anim.action is not None:
                 row = box.row()
                 row.prop(anim.action.animPipeline, "ap_rig_version")
@@ -536,7 +536,7 @@ class AnimationPanel(Panel, animPipeline):
         # PROP
         elif ap_settings.ap_prop:
             layout = self.layout
-            label = layout.label('Initialized as a Prop')
+            label = layout.label(text="Initialized as a Prop")
             box = layout.box()
 
             # Constraint
@@ -557,36 +557,43 @@ class AnimationPanel(Panel, animPipeline):
         # LEAF
         elif ap_settings.ap_leaf:
             layout = self.layout
-            label = layout.label('Initialized as a Leaf')
+            label = layout.label(text="Initialized as a Leaf")
 
         # CATCHER and export
         elif ap_settings.ap_catcher:
             layout = self.layout
-            label = layout.label('Initialized as a Catcher')
+            label = layout.label(text="Initialized as a Catcher")
             box = layout.box()
-            box.label('Export')
+            box.label(text="Export")
             row = box.row()
             row.operator("ap.exportaction", text="export current action")
             row.operator("ap.exportallactions", text="export all actions")
             box.prop(obj.animPipeline, "ap_export_path")
 
 
+
+# Registration
+classes = (
+    apSettings,
+    apActSettings,
+    ap_Init_Seed,
+    ap_Init_Prop,
+    ap_Init_Leaf,
+    ap_Init_Catcher,
+    ap_Uninit,
+    ap_Update_Rig_Version,
+    ap_Keep_One_Action,
+    ap_Link_Prop,
+    ap_Unlink_Prop,
+    ap_Merge_Actions,
+    exportCurAction,
+    exportAllActions,
+    AnimationPanel
+)
+
 def register():
-    bpy.utils.register_class(apSettings)
-    bpy.utils.register_class(apActSettings)
-    bpy.utils.register_class(ap_Init_Seed)
-    bpy.utils.register_class(ap_Init_Prop)
-    bpy.utils.register_class(ap_Init_Leaf)
-    bpy.utils.register_class(ap_Init_Catcher)
-    bpy.utils.register_class(ap_Uninit)
-    bpy.utils.register_class(ap_Update_Rig_Version)
-    bpy.utils.register_class(ap_Keep_One_Action)
-    bpy.utils.register_class(ap_Link_Prop)
-    bpy.utils.register_class(ap_Unlink_Prop)
-    bpy.utils.register_class(ap_Merge_Actions)
-    bpy.utils.register_class(exportCurAction)
-    bpy.utils.register_class(exportAllActions)
-    bpy.utils.register_class(AnimationPanel)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
     # Register properties when addon registred
     bpy.types.Object.animPipeline = bpy.props.PointerProperty(name='Animation Pipeline', type=apSettings)
@@ -598,21 +605,8 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(apSettings)
-    bpy.utils.unregister_class(apActSettings)
-    bpy.utils.unregister_class(ap_Init_Seed)
-    bpy.utils.unregister_class(ap_Init_Prop)
-    bpy.utils.unregister_class(ap_Init_Leaf)
-    bpy.utils.unregister_class(ap_Init_Catcher)
-    bpy.utils.unregister_class(ap_Uninit)
-    bpy.utils.unregister_class(ap_Update_Rig_Version)
-    bpy.utils.unregister_class(ap_Keep_One_Action)
-    bpy.utils.unregister_class(ap_Link_Prop)
-    bpy.utils.unregister_class(ap_Unlink_Prop)
-    bpy.utils.unregister_class(ap_Merge_Actions)
-    bpy.utils.unregister_class(exportCurAction)
-    bpy.utils.unregister_class(exportAllActions)
-    bpy.utils.unregister_class(AnimationPanel)
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
 
     # Handler Remove
     bpy.app.handlers.scene_update_pre.clear()

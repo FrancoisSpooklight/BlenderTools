@@ -2,7 +2,7 @@ import bpy
 from mathutils import Quaternion
 from mathutils import Vector
 
-
+## A mettre dans un fichier à part
 class apUtilities():
     '''
     Generic static methods
@@ -68,7 +68,7 @@ class apUtilities():
         except:
             pass
 
-
+## Mettre les utilities dans un autre fichier
 class exportAnim(bpy.types.Operator, apUtilities):
     '''
     Library for baking and exportations.
@@ -305,7 +305,7 @@ class animPipeline(apUtilities):
         '''
 
         seeds = []
-        objs = bpy.context.scene.objects
+        objs = bpy.context.scene.collection.objects
 
         for obj in objs:
             if obj.animPipeline.ap_seed:
@@ -319,7 +319,7 @@ class animPipeline(apUtilities):
         '''
 
         props = []
-        objs = bpy.context.scene.objects
+        objs = bpy.context.scene.collection.objects
 
         for obj in objs:
             if obj.animPipeline.ap_prop:
@@ -333,7 +333,7 @@ class animPipeline(apUtilities):
         '''
 
         leafs = []
-        objs = bpy.context.scene.objects
+        objs = bpy.context.scene.collection.objects
 
         for obj in objs:
             if obj.animPipeline.ap_leaf:
@@ -347,7 +347,7 @@ class animPipeline(apUtilities):
         '''
 
         catchers = []
-        objs = bpy.context.scene.objects
+        objs = bpy.context.scene.collection.objects
 
         for obj in objs:
             if obj.animPipeline.ap_catcher:
