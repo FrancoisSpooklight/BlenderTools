@@ -5,7 +5,7 @@ from utility import utilities
 bl_info = {
    "name": "blendshapePropagation",
    "author": "Spooklight Studio",
-   "version": (0, 1, 0),
+   "version": (1, 0, 0),
    "blender": (2, 80, 0),
    "location": "",
    "description": "Apply the effect of a source's blenshape on a target",
