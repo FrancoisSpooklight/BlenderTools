@@ -118,7 +118,7 @@ class bsPropagation():
 
 
 # Operator
-class bsPropagationOp (bpy.types.Operator, bsPropagation):
+class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
     '''
     Called in context: source is the active object, target the last.
     Called with parameters bpy.ops.bs.propagation(target = "", source = "")
@@ -141,11 +141,11 @@ class bsPropagationOp (bpy.types.Operator, bsPropagation):
 
 # Registration
 def register():
-    bpy.utils.register_class(bsPropagationOp)
+    bpy.utils.register_class(BSP_OT_bs_propagation)
 
 
 def unregister():
-    bpy.utils.unregister_class(bsPropagationOp)
+    bpy.utils.unregister_class(BSP_OT_bs_propagation)
 
 
 if __name__ == '__main__':
