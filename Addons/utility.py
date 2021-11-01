@@ -3,12 +3,12 @@ import bpy
 bl_info = {
     "name": "Animation Pipeline Utilities",
     "author": "Spooklight Studio",
-    "version": (0, 0, 1),
-    "blender": (2, 79, 0),
+    "version": (1, 0, 0),
+    "blender": (2, 80, 0),
     "location": "",
     "description": "Common Methods Library",
     "warning": "",
-    "wiki_url": "http://spooklight.ch/",
+    "wiki_url": "",
     "tracker_url": "",
     "category": "Development"}
 
