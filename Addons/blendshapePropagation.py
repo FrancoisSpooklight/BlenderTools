@@ -133,12 +133,19 @@ class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
     bl_label = "blendshape propagation"
     bl_description = "Apply the effect of a source's blenshape on a target"
 
+    copyTarget : bpy.props.BoolProperty() = False
+
     def invoke(self, context, event):
         if len(bpy.context.selected_objects) > 1:
             self.source = bpy.context.active_object.name
             self.target = bpy.context.selected_objects[0].name
-            print("source",self.source)
-            print("target", self.target)
+
+            if self.copyTarget:
+                newTarget = bpy.context.selected_objects[0].copy()
+                bpy.context.scene.collection.objects.link(newTarget)
+                self.target = newTarget.name
+            else:
+                self.target = bpy.context.selected_objects[0].name
 
             #check that both are not none and that target >< source
             return self.execute(context)
@@ -147,13 +154,37 @@ class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
         self.propagate()
         return {'FINISHED'}
 
+class BSP_PT_blendshape_propagation_panel(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Custom Tools"
+    bl_label = 'Blendshape Baker'
+    bl_options = {'HEADER_LAYOUT_EXPAND'}
+
+    @classmethod
+    def poll(self, context):
+        #A retravailler
+        if context.object is not None:
+            if context.object.mode == 'OBJECT' and context.object.type in {'MESH'}:
+                return True
+
+    def draw(self, context):
+        # UI
+        layout = self.layout
+        row = layout.row()
+        bakeButton = row.operator("bs.propagation", text="BAKE", icon='RENDER_STILL').copyTarget = False
+        row = layout.row()
+        bakeButtonCopy = row.operator("bs.propagation", text="BAKE with Copy", icon='DUPLICATE').copyTarget = True
+
 
 # Registration
 def register():
     bpy.utils.register_class(BSP_OT_bs_propagation)
+    bpy.utils.register_class(BSP_PT_blendshape_propagation_panel)
 
 
 def unregister():
+    bpy.utils.unregister_class(BSP_PT_blendshape_propagation_panel)
     bpy.utils.unregister_class(BSP_OT_bs_propagation)
 
 
