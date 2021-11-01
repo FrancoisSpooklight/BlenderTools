@@ -29,7 +29,7 @@ class utilities():
                 if area.type == 'VIEW_3D':
                     override = {'window': window, 'screen': screen, 'area': area}  # Inutile?
                     bpy.context.area.tag_redraw()
-                    bpy.context.scene.update()
+                    bpy.context.view_layer.update()
                     break
 
     @staticmethod
