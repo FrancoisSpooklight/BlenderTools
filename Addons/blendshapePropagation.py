@@ -26,8 +26,8 @@ class bsPropagation():
     '''
 
     # Input variables
-    source = bpy.props.StringProperty()
-    target = bpy.props.StringProperty()
+    source : bpy.props.StringProperty()
+    target : bpy.props.StringProperty()
 
     # Methods
     def meshToShape(self, sourceMesh, key):
