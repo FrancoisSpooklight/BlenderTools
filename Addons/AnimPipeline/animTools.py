@@ -1,6 +1,8 @@
+# noinspection PyUnresolvedReferences
 import bpy
 from mathutils import Quaternion
 from mathutils import Vector
+
 
 ## A mettre dans un fichier à part
 class apUtilities():
@@ -84,10 +86,10 @@ class exportAnim(bpy.types.Operator, apUtilities):
     bl_label = "SPOOKY - Export Anim"
 
     # Variables
-    source = bpy.props.EnumProperty(items=())
-    target = bpy.props.EnumProperty(items=())
-    exportObjects = bpy.props.EnumProperty(items=())
-    filepath = bpy.props.StringProperty(subtype="FILE_PATH")
+    source : bpy.props.EnumProperty(items=())
+    target : bpy.props.EnumProperty(items=())
+    exportObjects : bpy.props.EnumProperty(items=())
+    filepath : bpy.props.StringProperty(subtype="FILE_PATH")
 
     def updateFrames(self, source):
         '''
@@ -166,11 +168,11 @@ class exportAnim(bpy.types.Operator, apUtilities):
         for obj in self.exportObjects:
             print ("Object tagged for export:", obj.name)
             # Select object if it is not select_hided
-            obj.select = True
+            obj.select_set(True)
             # Invert select Hided Flag
             obj.hide_select = not obj.hide_select
             # Select others object that were select_Hided
-            obj.select = True
+            obj.select_set(True)
 
         # Unactive target clear_constraints
         self.muteConstraints(self.target[0], True)
@@ -243,7 +245,7 @@ class exportAnim(bpy.types.Operator, apUtilities):
         # Reset Selectability of meshes
         for obj in self.exportObjects:
             # print (obj.hide_select, '--->', not obj.hide_select)
-            obj.select = False
+            obj.select_set(False)
             obj.hide_select = not obj.hide_select
 
         # Empty catcher's action
@@ -263,7 +265,7 @@ class exportAnim(bpy.types.Operator, apUtilities):
 class animPipeline(apUtilities):
 
     # Variables
-    ap_target = bpy.props.StringProperty()
+    ap_target : bpy.props.StringProperty()
 
     def ap_init(self, type):
         '''
@@ -304,12 +306,16 @@ class animPipeline(apUtilities):
         return an array containing all seeds' objects in the scene
         '''
 
+        print("collect seeds")
+
         seeds = []
-        objs = bpy.context.scene.collection.objects
+        objs = bpy.context.scene.objects
 
         for obj in objs:
             if obj.animPipeline.ap_seed:
                 seeds.append(obj)
+
+        print("seeds",seeds)
 
         return seeds
 
@@ -319,7 +325,7 @@ class animPipeline(apUtilities):
         '''
 
         props = []
-        objs = bpy.context.scene.collection.objects
+        objs = bpy.context.scene.objects
 
         for obj in objs:
             if obj.animPipeline.ap_prop:
@@ -333,7 +339,7 @@ class animPipeline(apUtilities):
         '''
 
         leafs = []
-        objs = bpy.context.scene.collection.objects
+        objs = bpy.context.scene.objects
 
         for obj in objs:
             if obj.animPipeline.ap_leaf:
@@ -347,7 +353,7 @@ class animPipeline(apUtilities):
         '''
 
         catchers = []
-        objs = bpy.context.scene.collection.objects
+        objs = bpy.context.scene.objects
 
         for obj in objs:
             if obj.animPipeline.ap_catcher:

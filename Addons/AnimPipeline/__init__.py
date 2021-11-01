@@ -1,33 +1,57 @@
-import bpy
-import sys
-from os import path
-from bpy.app.handlers import persistent
-from bpy.types import PropertyGroup, Operator, Panel
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
 
-
-# Modules Import
-dir = path.dirname(path.realpath(__file__))
-print ("Addon Launched at", dir)
-
-if dir not in sys.path:
-    sys.path.append(dir)
-
-from animTools import exportAnim
-from animTools import animPipeline
-from animTools import apUtilities
+# <pep8 compliant>
 
 # Add-on Informations
 bl_info = {
    "name": "Animation Pipeline",
    "author": "Spooklight Studio",
    "version": (3, 0, 0),
-   "blender": (2, 8, 0),
+   "blender": (2, 80, 0),
    "location": "",
    "description": "Tools to manage and export Animations",
    "warning": "",
    "wiki_url": "",
    "tracker_url": "",
    "category": "Animation"}
+
+from .animTools import exportAnim
+from .animTools import animPipeline
+from .animTools import apUtilities
+
+# Modules Import
+#dir = path.dirname(path.realpath(__file__))
+#print ("Addon Launched at", dir)
+
+#if dir not in sys.path:
+#    sys.path.append(dir)
+
+# noinspection PyUnresolvedReferences
+import bpy
+import sys
+from os import path
+from bpy.app.handlers import persistent
+from bpy.types import PropertyGroup, Operator, Panel
+from bpy.props import PointerProperty, CollectionProperty, BoolProperty
+#from . import exportAnim
+#from . import animPipeline
+#from . import apUtilities
 
 
 #  InFile Settings
@@ -41,11 +65,11 @@ class apActSettings(PropertyGroup):
     ..ap_rig_version     (Float)
     ..ap_prop_n          (string)
     '''
-    ap_rig_version = bpy.props.FloatProperty(name="rig version", default=0.0)
-    ap_prop_1 = bpy.props.StringProperty(name="Prop 1", default="")
-    ap_prop_2 = bpy.props.StringProperty(name="Prop 2", default="")
-    ap_prop_3 = bpy.props.StringProperty(name="Prop 3", default="")
-    ap_prop_4 = bpy.props.StringProperty(name="Prop 4", default="")
+    ap_rig_version : bpy.props.FloatProperty(name="rig version", default=0.0)
+    ap_prop_1 : bpy.props.StringProperty(name="Prop 1", default="")
+    ap_prop_2 : bpy.props.StringProperty(name="Prop 2", default="")
+    ap_prop_3 : bpy.props.StringProperty(name="Prop 3", default="")
+    ap_prop_4 : bpy.props.StringProperty(name="Prop 4", default="")
 
 
 class apSettings(PropertyGroup):
@@ -61,12 +85,12 @@ class apSettings(PropertyGroup):
     ..ap_catcher  (catcher // bool)
     ..ap_export_path (export path //string / path)
     '''
-    ap_seed = bpy.props.BoolProperty(name="seed", default=False)
-    ap_prop = bpy.props.BoolProperty(name="prop", default=False)
-    ap_leaf = bpy.props.BoolProperty(name="leaf", default=False)
-    ap_catcher = bpy.props.BoolProperty(name="catcher", default=False)
-    ap_export_path = bpy.props.StringProperty(name="export path", subtype="FILE_PATH", default="C:/tmp/")
-    ap_rig_version = bpy.props.FloatProperty(name="rig version", default=0.0)
+    ap_seed : bpy.props.BoolProperty(name="seed", default=False)
+    ap_prop : bpy.props.BoolProperty(name="prop", default=False)
+    ap_leaf : bpy.props.BoolProperty(name="leaf", default=False)
+    ap_catcher : bpy.props.BoolProperty(name="catcher", default=False)
+    ap_export_path : bpy.props.StringProperty(name="export path", subtype="FILE_PATH", default="C:/tmp/")
+    ap_rig_version : bpy.props.FloatProperty(name="rig version", default=0.0)
 
 
 # Handlers
@@ -108,7 +132,7 @@ def updateFramesHandler(dummy):
 
 
 # Operators
-class ap_Init_Seed (Operator, animPipeline):
+class AN_OT_Init_Seed (Operator, animPipeline):
     '''
     initialize the object as a Seed
     '''
@@ -121,7 +145,7 @@ class ap_Init_Seed (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class ap_Init_Prop (Operator, animPipeline):
+class AP_OT_Init_Prop (Operator, animPipeline):
     '''
     initialize the object as a Prop
     '''
@@ -139,7 +163,7 @@ class ap_Init_Prop (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class ap_Init_Leaf (Operator, animPipeline):
+class AP_OT_Init_Leaf (Operator, animPipeline):
     '''
     initialize the object as a Leaf
     '''
@@ -152,7 +176,7 @@ class ap_Init_Leaf (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class ap_Init_Catcher (Operator, animPipeline):
+class AP_OT_Init_Catcher (Operator, animPipeline):
     '''
     initialize the object as a Catcher
     '''
@@ -165,7 +189,7 @@ class ap_Init_Catcher (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class ap_Uninit (Operator, animPipeline):
+class AP_OT_Uninit (Operator, animPipeline):
     '''
     uninitialize the object
     '''
@@ -178,7 +202,7 @@ class ap_Uninit (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class ap_Update_Rig_Version (Operator, animPipeline):
+class AP_OT_Update_Rig_Version (Operator, animPipeline):
     '''
     Update rig version
     '''
@@ -191,7 +215,7 @@ class ap_Update_Rig_Version (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class ap_Keep_One_Action (Operator, animPipeline):
+class AP_OT_Keep_One_Action (Operator, animPipeline):
     '''
     Delete all actions
     except the one currently selected
@@ -205,7 +229,7 @@ class ap_Keep_One_Action (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class ap_Link_Prop(Operator, animPipeline, apUtilities):
+class AP_OT_Link_Prop(Operator, animPipeline, apUtilities):
     '''
     Link the current prop to the current action
     '''
@@ -261,7 +285,7 @@ class ap_Link_Prop(Operator, animPipeline, apUtilities):
         return{'FINISHED'}
 
 
-class ap_Unlink_Prop(Operator):
+class AP_OT_Unlink_Prop(Operator):
     '''
     Unlink the prop number #n from the current action
     Reorganize the prop list without empty spaces
@@ -269,7 +293,7 @@ class ap_Unlink_Prop(Operator):
     bl_idname = "ap.unlinkprop"
     bl_label = "ap unlink prop from current action"
 
-    prop_target = bpy.props.FloatProperty(default=1)
+    prop_target : bpy.props.FloatProperty(default=1)
 
     def execute(self, context):
         act = bpy.context.object.animation_data.action
@@ -301,7 +325,7 @@ class ap_Unlink_Prop(Operator):
         return{'FINISHED'}
 
 
-class ap_Merge_Actions (Operator, animPipeline):
+class AP_OT_Merge_Actions (Operator, animPipeline):
     '''
     Merge selected prop actions to seed's current action
     '''
@@ -339,7 +363,7 @@ class ap_Merge_Actions (Operator, animPipeline):
         return {'FINISHED'}
 
 
-class exportCurAction(animPipeline, exportAnim):
+class AP_OT_exportCurAction(animPipeline, exportAnim):
     '''
     Export the current action to an fbx file
     '''
@@ -391,7 +415,7 @@ class exportCurAction(animPipeline, exportAnim):
         return {'FINISHED'}
 
 
-class exportAllActions(exportAnim, animPipeline, Operator):
+class AP_OT_exportAllActions(exportAnim, animPipeline, Operator):
     '''
     Export the all the actions to their own fbx files
     '''
@@ -463,11 +487,12 @@ class exportAllActions(exportAnim, animPipeline, Operator):
 
 
 # UI
-class AnimationPanel(Panel, animPipeline):
-    bl_label = "Animation Pipeline"
-    bl_region_type = "UI"
+class AP_PT_AnimationPanel(Panel, animPipeline):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
     bl_category = "Animation Pipeline"
-    bl_label = "Anim"
+    bl_label = 'Anim'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(self, context):
@@ -573,43 +598,56 @@ class AnimationPanel(Panel, animPipeline):
 
 
 # Registration
-classes = (
-    apSettings,
-    apActSettings,
-    ap_Init_Seed,
-    ap_Init_Prop,
-    ap_Init_Leaf,
-    ap_Init_Catcher,
-    ap_Uninit,
-    ap_Update_Rig_Version,
-    ap_Keep_One_Action,
-    ap_Link_Prop,
-    ap_Unlink_Prop,
-    ap_Merge_Actions,
-    exportCurAction,
-    exportAllActions,
-    AnimationPanel
-)
 
+#a deporter dans les différents fichiers
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+
+    print("register")
+    bpy.utils.register_class(apSettings)
+    bpy.utils.register_class(apActSettings)
+    bpy.utils.register_class(AN_OT_Init_Seed)
+    bpy.utils.register_class(AP_OT_Init_Prop)
+    bpy.utils.register_class(AP_OT_Init_Leaf)
+    bpy.utils.register_class(AP_OT_Init_Catcher)
+    bpy.utils.register_class(AP_OT_Uninit)
+    bpy.utils.register_class(AP_OT_Update_Rig_Version)
+    bpy.utils.register_class(AP_OT_Keep_One_Action)
+    bpy.utils.register_class(AP_OT_Link_Prop)
+    bpy.utils.register_class(AP_OT_Unlink_Prop)
+    bpy.utils.register_class(AP_OT_Merge_Actions)
+    bpy.utils.register_class(AP_OT_exportCurAction)
+    bpy.utils.register_class(AP_OT_exportAllActions)
+    bpy.utils.register_class(AP_PT_AnimationPanel)
 
     # Register properties when addon registred
     bpy.types.Object.animPipeline = bpy.props.PointerProperty(name='Animation Pipeline', type=apSettings)
     bpy.types.Action.animPipeline = bpy.props.PointerProperty(name='Animation Pipeline', type=apActSettings)
 
     # Handler Registration
-    bpy.app.handlers.frame_change_pre.clear()
-    bpy.app.handlers.frame_change_pre.append(updateFramesHandler)
+    #bpy.app.handlers.frame_change_pre.clear()
+    #bpy.app.handlers.frame_change_pre.append(updateFramesHandler)
 
 
 def unregister():
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+    print("unregister")
+    bpy.utils.unregister_class(AP_PT_AnimationPanel)
+    bpy.utils.unregister_class(AP_OT_exportAllActions)
+    bpy.utils.unregister_class(AP_OT_exportCurAction)
+    bpy.utils.unregister_class(AP_OT_Merge_Actions)
+    bpy.utils.unregister_class(AP_OT_Init_Leaf)
+    bpy.utils.unregister_class(AP_OT_Link_Prop)
+    bpy.utils.unregister_class(AP_OT_Keep_One_Action)
+    bpy.utils.unregister_class(AP_OT_Update_Rig_Version)
+    bpy.utils.unregister_class(AP_OT_Uninit)
+    bpy.utils.unregister_class(AP_OT_Init_Catcher)
+    bpy.utils.unregister_class(AP_OT_Init_Prop)
+    bpy.utils.unregister_class(AP_OT_Unlink_Prop)
+    bpy.utils.unregister_class(AN_OT_Init_Seed)
+    bpy.utils.unregister_class(apActSettings)
+    bpy.utils.unregister_class(apSettings)
 
     # Handler Remove
-    bpy.app.handlers.scene_update_pre.clear()
+    #bpy.app.handlers.scene_update_pre.clear()
 
 if __name__ == "__main__":
     register()
