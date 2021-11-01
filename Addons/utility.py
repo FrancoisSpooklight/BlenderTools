@@ -132,7 +132,7 @@ class utilities():
             duplicatedObj[o.name] = newObj.name
 
             if link:
-                bpy.context.scene.objects.link(newObj)
+                bpy.context.scene.collection.objects.link(newObj)
 
         # Reconstruct Hierarchy
         for o in duplicatedObj:
@@ -148,7 +148,7 @@ class utilities():
         return duplicatedObj
 
 
-class helpDesk(bpy.types.Operator):
+class UTILS_OT_help_desk(bpy.types.Operator):
     '''
     Call the context bl_info help url
     '''
@@ -157,7 +157,7 @@ class helpDesk(bpy.types.Operator):
     bl_label = "Spooklight HelpDesk"
     bl_description = "Open the current AddOn Help URL"
 
-    helpURL = bpy.props.StringProperty()
+    helpURL : bpy.props.StringProperty()
 
     def execute(self, context):
         bpy.ops.wm.url_open(url=self.helpURL)
@@ -165,8 +165,8 @@ class helpDesk(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(helpDesk)
+    bpy.utils.register_class(UTILS_OT_help_desk)
 
 
 def unregister():
-    bpy.utils.unregister_class(helpDesk)
+    bpy.utils.unregister_class(UTILS_OT_help_desk)
