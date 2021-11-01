@@ -5,7 +5,7 @@ import time
 from utility import utilities
 
 bl_info = {
-   "name": "blendshapePropagation",
+   "name": "Blendshape Propagation",
    "author": "Spooklight Studio",
    "version": (1, 0, 0),
    "blender": (2, 80, 0),
@@ -30,27 +30,27 @@ class bsPropagation():
     target : bpy.props.StringProperty()
 
     # Methods
-    def meshToShape(self, sourceMesh, key):
+    @staticmethod
+    def meshToShape(BSMesh, targetObj, key):
 
         '''
         Transfer a mesh on a Shape Key.
         Working only with identical topology
 
         sourceMesh: mesh(data) to write
+        targetObj: target to write the BS into
         key: shape key name (string) on wich to write to.
         '''
 
-        # Pointers
-        sourceObj = bpy.data.objects.get(self.source)
-        targetObj = bpy.data.objects.get(self.target)
-
         targetKey = targetObj.data.shape_keys.key_blocks[key.name]
+        print (targetKey)
 
         # Copy the vertices coord from mesh to shape key.
         i = 0
-        for vx in sourceMesh.vertices:
+        for vx in BSMesh.vertices:
 
             targetKey.data[i].co = vx.co
+            print(vx.co)
 
             i += 1
 
@@ -73,7 +73,7 @@ class bsPropagation():
         if sourceBS is not None:
 
             # Reset Blendshapes
-            utilities.resetBS(sourceBS)
+            #utilities.resetBS(sourceBS)
 
             # Iterate over Sources BS
             for key in sourceBS.key_blocks:
@@ -91,21 +91,25 @@ class bsPropagation():
                         else:
                             mod.show_viewport = False
 
-                # Update
-                utilities.screenUpdate()
+                # Update A virer?
+                #targetObj.update_tag()
+                #utilities.screenUpdate()
 
                 # Store target result as a new mesh
-                BStoMesh = targetObj.to_mesh(bpy.context.scene, True, ('PREVIEW'))
+
+                deps = bpy.context.evaluated_depsgraph_get()
+                evalTarget = targetObj.evaluated_get(deps)
+                BStoMesh = evalTarget.to_mesh()
 
                 # Create a shape and write it as a new target's shape.
                 newKey = targetObj.shape_key_add(name=key.name, from_mix=False)
                 # Except for Basis Shape Key
                 if key.name != 'Basis':
-                    self.meshToShape(BStoMesh, key)
+                    self.meshToShape(BStoMesh, targetObj, key)
 
                 # Clean
                 key.value = 0
-                bpy.data.meshes.remove(BStoMesh)
+                evalTarget.to_mesh_clear()
                 for mod in fixMods:
                     mod.show_viewport = False
                 utilities.screenUpdate()
@@ -114,6 +118,7 @@ class bsPropagation():
             utilities.resetMod(targetObj)
 
         else:
+            # Convert to raise warning
             print ("no BS in source object")
 
 
@@ -131,7 +136,11 @@ class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
     def invoke(self, context, event):
         if len(bpy.context.selected_objects) > 1:
             self.source = bpy.context.active_object.name
-            self.target = bpy.context.selected_objects[-1].name
+            self.target = bpy.context.selected_objects[0].name
+            print("source",self.source)
+            print("target", self.target)
+
+            #check that both are not none and that target >< source
             return self.execute(context)
 
     def execute(self, context):
