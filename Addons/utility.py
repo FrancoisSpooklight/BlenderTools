@@ -43,18 +43,24 @@ class utilities():
 
     @staticmethod
     def resetMod(object):
+        '''
+        Get Rid of all the modifiers of an object
+        '''
         for mod in object.modifiers:
             object.modifiers.remove(mod)
 
     @staticmethod
     def updateScreen():
+        '''
+        Redraw all the 3D views
+        '''
+
         for window in bpy.context.window_manager.windows:
             screen = window.screen
 
         for area in screen.areas:
             if area.type == 'VIEW_3D':
                 bpy.context.area.tag_redraw()
-                break
 
     @staticmethod
     def resetArmature(armature):
