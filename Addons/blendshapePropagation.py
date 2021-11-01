@@ -1,5 +1,7 @@
 import bpy
 import time
+
+# Check présence!!
 from utility import utilities
 
 bl_info = {
@@ -35,7 +37,7 @@ class bsPropagation():
         Working only with identical topology
 
         sourceMesh: mesh(data) to write
-        key: shapekey on wich write to.
+        key: shape key name (string) on wich to write to.
         '''
 
         # Pointers
