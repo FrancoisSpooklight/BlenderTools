@@ -135,6 +135,29 @@ class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
 
     copyTarget : bpy.props.BoolProperty() = False
 
+    @classmethod
+    def poll(self, context):
+        if len(context.selected_objects) > 0:
+            selected = context.selected_objects[0]
+        else:
+            return False
+
+        active = context.active_object
+        isSourceOk = False
+        isTargetOk = False
+
+        if active is not None:
+            if active.type == 'MESH':
+                    isSourceOk = True
+
+        if selected.type == 'MESH':
+            isTargetOk = True
+
+        if isSourceOk and isTargetOk:
+            return active is not selected
+        else:
+            return False
+
     def invoke(self, context, event):
         if len(bpy.context.selected_objects) > 1:
             self.source = bpy.context.active_object.name
@@ -143,6 +166,7 @@ class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
             if self.copyTarget:
                 newTarget = bpy.context.selected_objects[0].copy()
                 bpy.context.scene.collection.objects.link(newTarget)
+                newTarget.name = newTarget.name[:-3] + "BAKE"
                 self.target = newTarget.name
             else:
                 self.target = bpy.context.selected_objects[0].name
@@ -163,10 +187,7 @@ class BSP_PT_blendshape_propagation_panel(bpy.types.Panel):
 
     @classmethod
     def poll(self, context):
-        #A retravailler
-        if context.object is not None:
-            if context.object.mode == 'OBJECT' and context.object.type in {'MESH'}:
-                return True
+        return context.object.mode == 'OBJECT'
 
     def draw(self, context):
         # UI
