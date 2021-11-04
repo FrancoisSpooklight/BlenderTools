@@ -43,14 +43,14 @@ class bsPropagation():
         '''
 
         targetKey = targetObj.data.shape_keys.key_blocks[key.name]
-        print (targetKey)
+        print ("Current Key : ", targetKey.name)
 
         # Copy the vertices coord from mesh to shape key.
         i = 0
         for vx in BSMesh.vertices:
 
             targetKey.data[i].co = vx.co
-            print(vx.co)
+            #print(vx.co)
 
             i += 1
 
@@ -91,12 +91,7 @@ class bsPropagation():
                         else:
                             mod.show_viewport = False
 
-                # Update A virer?
-                #targetObj.update_tag()
-                #utilities.screenUpdate()
-
                 # Store target result as a new mesh
-
                 deps = bpy.context.evaluated_depsgraph_get()
                 evalTarget = targetObj.evaluated_get(deps)
                 BStoMesh = evalTarget.to_mesh()
@@ -137,42 +132,55 @@ class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
 
     @classmethod
     def poll(self, context):
-        if len(context.selected_objects) > 0:
-            selected = context.selected_objects[0]
+
+        # Check if at least 2 objects are selected
+        if len(context.selected_objects) > 1:
+            source = context.active_object
+            # The second object shouldn't be the active object
+            selection = context.selected_objects
+            selection.remove(source)
+            target = selection[0]
         else:
             return False
 
-        active = context.active_object
         isSourceOk = False
         isTargetOk = False
 
-        if active is not None:
-            if active.type == 'MESH':
+        # Check that source is a mesh in object mode
+        if source is not None:
+            if source.type == 'MESH':
+                if source.mode == 'OBJECT':
                     isSourceOk = True
 
-        if selected.type == 'MESH':
-            isTargetOk = True
+        # Check that target is a mesh in object mode
+        if target.type == 'MESH':
+            if target.mode == 'OBJECT':
+                isTargetOk = True
 
-        if isSourceOk and isTargetOk:
-            return active is not selected
-        else:
-            return False
+        return isSourceOk and isTargetOk
 
     def invoke(self, context, event):
-        if len(bpy.context.selected_objects) > 1:
-            self.source = bpy.context.active_object.name
-            self.target = bpy.context.selected_objects[0].name
 
-            if self.copyTarget:
-                newTarget = bpy.context.selected_objects[0].copy()
-                bpy.context.scene.collection.objects.link(newTarget)
-                newTarget.name = newTarget.name[:-3] + "BAKE"
-                self.target = newTarget.name
-            else:
-                self.target = bpy.context.selected_objects[0].name
+        source = context.active_object
+        self.source = source.name
+        # The second object shouldn't be the active object
+        selection = context.selected_objects
+        selection.remove(source)
+        target = selection[0]
+        self.target = target.name
 
-            #check that both are not none and that target >< source
-            return self.execute(context)
+        # If copy: copy the original target object and change the target
+        if self.copyTarget:
+            newTarget = target.copy()
+            bpy.context.scene.collection.objects.link(newTarget)
+            newTarget.name = newTarget.name[:-3] + "BAKE"
+            self.target = newTarget.name
+
+        print("Source :",self.source)
+        print("Target :", self.target)
+
+        #check that both are not none and that target >< source
+        return self.execute(context)
 
     def execute(self, context):
         self.propagate()
@@ -184,10 +192,6 @@ class BSP_PT_blendshape_propagation_panel(bpy.types.Panel):
     bl_category = "Custom Tools"
     bl_label = 'Blendshape Baker'
     bl_options = {'HEADER_LAYOUT_EXPAND'}
-
-    @classmethod
-    def poll(self, context):
-        return context.object.mode == 'OBJECT'
 
     def draw(self, context):
         # UI
