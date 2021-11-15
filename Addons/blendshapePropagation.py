@@ -172,6 +172,7 @@ class BSP_OT_bs_propagation (bpy.types.Operator, bsPropagation):
         # If copy: copy the original target object and change the target
         if self.copyTarget:
             newTarget = target.copy()
+            newTarget.data = newTarget.data.copy()
             bpy.context.scene.collection.objects.link(newTarget)
             newTarget.name = newTarget.name[:-3] + "BAKE"
             self.target = newTarget.name
