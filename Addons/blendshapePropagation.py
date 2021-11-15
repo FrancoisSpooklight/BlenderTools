@@ -85,7 +85,7 @@ class bsPropagation():
 
                 for mod in targetObj.modifiers:
                     if 'FIX' in mod.name:
-                        if mod.name == 'FIX-' + key.name:
+                        if key.name in mod.name:
                             mod.show_viewport = True
                             fixMods.append(mod)
                         else:
