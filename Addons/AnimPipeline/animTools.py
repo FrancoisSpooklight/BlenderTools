@@ -86,9 +86,9 @@ class exportAnim(bpy.types.Operator, apUtilities):
     bl_label = "SPOOKY - Export Anim"
 
     # Variables
-    source : bpy.props.EnumProperty(items=())
-    target : bpy.props.EnumProperty(items=())
-    exportObjects : bpy.props.EnumProperty(items=())
+    #source : bpy.props.EnumProperty(items=())
+    #target : bpy.props.EnumProperty(items=())
+    #exportObjects : bpy.props.EnumProperty(items=())
     filepath : bpy.props.StringProperty(subtype="FILE_PATH")
 
     def updateFrames(self, source):
@@ -124,7 +124,7 @@ class exportAnim(bpy.types.Operator, apUtilities):
                 for const in pbone.constraints:
                     const.influence = 0
 
-    def bakeAnim(self):
+    def bakeAnim(self, target, source):
         '''
         Create a dummy scene,
         Bake the source's current action on a
@@ -133,8 +133,8 @@ class exportAnim(bpy.types.Operator, apUtilities):
 
         print ("Baking...")
 
-        target = self.target[0]
-        source = self.source[0]
+        #target = self.target[0]
+        #source = self.source[0]
 
         # Store the source action
         curActName = source.animation_data.action.name
@@ -156,7 +156,7 @@ class exportAnim(bpy.types.Operator, apUtilities):
 
         print("Baking DONE")
 
-    def exportAnim(self):
+    def exportAnim(self, target, exportObjects):
         '''
         Export an fbx of the current selection to
         a specified filepath
@@ -165,38 +165,43 @@ class exportAnim(bpy.types.Operator, apUtilities):
         # print ("Exporting", self.exportObjects, "at", self.filepath)
         print ("Exporting at", self.filepath, "...")
 
-        for obj in self.exportObjects:
+        for obj in exportObjects:
             print ("Object tagged for export:", obj.name)
             # Select object if it is not select_hided
-            obj.select_set(True)
-            # Invert select Hided Flag
-            obj.hide_select = not obj.hide_select
-            # Select others object that were select_Hided
+            obj.hide_viewport = False
+            obj.hide_select = False
             obj.select_set(True)
 
         # Unactive target clear_constraints
-        self.muteConstraints(self.target[0], True)
+        self.muteConstraints(target, True)
+
+        #Updating depsgraph
+        dg = bpy.context.evaluated_depsgraph_get()
+        dg.update()
+
 
         # export FBX
         bpy.ops.export_scene.fbx(
             filepath=self.filepath,
-            check_existing=True,
+            check_existing=False,
             use_selection=True,
             use_mesh_modifiers=False,
-            use_anim=True,
-            use_anim_action_all=False,
-            use_anim_optimize=True,
-            anim_optimize_precision=16,
-            bake_anim_use_all_actions=False,
+            bake_anim=True,
+            bake_anim_use_all_bones=True,
             bake_anim_use_nla_strips=False,
+            bake_anim_use_all_actions=False,
+            bake_anim_force_startend_keying=False,
+            bake_anim_step = 1.00,
+            bake_anim_simplify_factor = 0.50,
             global_scale=1.0,
             axis_forward='-Z',
             axis_up='Y',
-            object_types={'ARMATURE', 'MESH'})
+            object_types={'ARMATURE', 'MESH'}
+        )
 
         print("Export DONE")
 
-    def cleanScene(self):
+    def cleanScene(self, target, exportObjects):
         '''
         Clean scene to restore scene's state
         before baking and export
@@ -218,7 +223,7 @@ class exportAnim(bpy.types.Operator, apUtilities):
         for mesh in bpy.data.meshes:
             if mesh.users == 0:
                 bpy.data.meshes.remove(mesh)
-        for lamp in bpy.data.lamps:
+        for lamp in bpy.data.lights:
             if lamp.users == 0:
                 bpy.data.lamps.remove(lamp)
         for mat in bpy.data.materials:
@@ -238,15 +243,15 @@ class exportAnim(bpy.types.Operator, apUtilities):
                 bpy.data.linestyles.remove(linestyle)
 
         # Reactivate muted target constraints
-        target = self.target[0]
+        #target = self.target[0]
         self.muteConstraints(target, False)
         self.resetArmature(target)
 
         # Reset Selectability of meshes
-        for obj in self.exportObjects:
-            # print (obj.hide_select, '--->', not obj.hide_select)
-            obj.select_set(False)
-            obj.hide_select = not obj.hide_select
+        # for obj in exportObjects:
+        #     # print (obj.hide_select, '--->', not obj.hide_select)
+        #     obj.select_set(False)
+        #     obj.hide_select = not obj.hide_select
 
         # Empty catcher's action
         target.animation_data.action = None

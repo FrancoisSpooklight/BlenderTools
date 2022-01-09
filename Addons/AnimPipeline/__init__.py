@@ -94,41 +94,44 @@ class apSettings(PropertyGroup):
 
 
 # Handlers
-@persistent
-def updateFramesHandler(dummy):
-    '''
-    If a seed is selected and its action is changed
-    Update the scene frame range
-    Update the visibility of the props
-    '''
 
-    # print ("handler active")
-    global oldAct
 
-    try:
-        oldAct
-    except:
-        oldAct = None
+# @persistent
+# def updateFramesHandler(dummy):
+#     '''
+#     If a seed is selected and its action is changed
+#     Update the scene frame range
+#     Update the visibility of the props
+#     '''
+#
+#     # print ("handler active")
+#     global oldAct
+#
+#     try:
+#         oldAct
+#     except:
+#         oldAct = None
+#
+#     # Analyze context
+#     source = bpy.context.object
+#     if hasattr(source, "animPipeline"):
+#         isSeed = source.animPipeline.ap_seed
+#     else:
+#         isSeed = False
+#
+#     # If active obj is a seed and its action has changed
+#     if isSeed:
+#         curAct = source.animation_data.action
+#
+#         if curAct != oldAct:
+#
+#             # Update frame range
+#             exportAnim.updateFrames(exportAnim, source)
+#             # Update Props visibility
+#             animPipeline.ap_prepare_props_for_action(animPipeline(), curAct)
+#
+#             oldAct = curAct
 
-    # Analyze context
-    source = bpy.context.object
-    if hasattr(source, "animPipeline"):
-        isSeed = source.animPipeline.ap_seed
-    else:
-        isSeed = False
-
-    # If active obj is a seed and its action has changed
-    if isSeed:
-        curAct = source.animation_data.action
-
-        if curAct != oldAct:
-
-            # Update frame range
-            exportAnim.updateFrames(exportAnim, source)
-            # Update Props visibility
-            animPipeline.ap_prepare_props_for_action(animPipeline(), curAct)
-
-            oldAct = curAct
 
 
 # Operators
@@ -381,18 +384,19 @@ class AP_OT_exportCurAction(animPipeline, exportAnim):
     def execute(self, context):
 
         # Update Variables
-        self.source = self.ap_collect_seed()
-        self.target = self.ap_collect_catcher()
-        self.exportObjects = self.ap_collect_catcher() + self.ap_collect_leaf()
+        print ("this is source",self.ap_collect_seed())
+        source = self.ap_collect_seed()[0]
+        target = self.ap_collect_catcher()[0]
+        exportObjects = self.ap_collect_catcher() + self.ap_collect_leaf()
 
         # Check if the current file is a library
         isLib = "AutoLink.py" in bpy.data.texts
 
         # Get export path from seed's action
-        seed = self.source[0]
-        action = seed.animation_data.action
+        action = source.animation_data.action
         path = self.ap_get_export_path()
         self.filepath = path + action.name + ".fbx"
+        print("this is filepath",self.filepath)
 
         # Add props to the export
         self.ap_prepare_props_for_action(action)
@@ -401,12 +405,13 @@ class AP_OT_exportCurAction(animPipeline, exportAnim):
         if isLib:
             propsNamespace = self.ap_remove_namespace(props, "::")
 
-        self.exportObjects += props
+        #self.exportObjects += props
+        exportObjects += props
 
         # Export Process
-        self.bakeAnim()
-        self.exportAnim()
-        self.cleanScene()
+        self.bakeAnim(target, source)
+        self.exportAnim(target, exportObjects)
+        self.cleanScene(target, exportObjects)
 
         # Restore namespaces in props Names
         if isLib:
