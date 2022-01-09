@@ -3,12 +3,12 @@ import bpy
 bl_info = {
     "name": "Animation Pipeline Utilities",
     "author": "Spooklight Studio",
-    "version": (0, 0, 1),
-    "blender": (2, 79, 0),
+    "version": (1, 0, 0),
+    "blender": (2, 80, 0),
     "location": "",
     "description": "Common Methods Library",
     "warning": "",
-    "wiki_url": "http://spooklight.ch/",
+    "wiki_url": "",
     "tracker_url": "",
     "category": "Development"}
 
@@ -27,10 +27,8 @@ class utilities():
 
             for area in screen.areas:
                 if area.type == 'VIEW_3D':
-                    override = {'window': window, 'screen': screen, 'area': area}  # Inutile?
                     bpy.context.area.tag_redraw()
-                    bpy.context.scene.update()
-                    break
+                    bpy.context.view_layer.update()
 
     @staticmethod
     def resetBS(shapes):
@@ -43,18 +41,24 @@ class utilities():
 
     @staticmethod
     def resetMod(object):
+        '''
+        Get Rid of all the modifiers of an object
+        '''
         for mod in object.modifiers:
             object.modifiers.remove(mod)
 
-    @staticmethod
-    def updateScreen():
-        for window in bpy.context.window_manager.windows:
-            screen = window.screen
-
-        for area in screen.areas:
-            if area.type == 'VIEW_3D':
-                bpy.context.area.tag_redraw()
-                break
+    # @staticmethod
+    # def updateScreen():
+    #     '''
+    #     Redraw all the 3D views
+    #     '''
+    #
+    #     for window in bpy.context.window_manager.windows:
+    #         screen = window.screen
+    #
+    #     for area in screen.areas:
+    #         if area.type == 'VIEW_3D':
+    #             bpy.context.area.tag_redraw()
 
     @staticmethod
     def resetArmature(armature):
@@ -132,7 +136,7 @@ class utilities():
             duplicatedObj[o.name] = newObj.name
 
             if link:
-                bpy.context.scene.objects.link(newObj)
+                bpy.context.scene.collection.objects.link(newObj)
 
         # Reconstruct Hierarchy
         for o in duplicatedObj:
@@ -148,7 +152,7 @@ class utilities():
         return duplicatedObj
 
 
-class helpDesk(bpy.types.Operator):
+class UTILS_OT_help_desk(bpy.types.Operator):
     '''
     Call the context bl_info help url
     '''
@@ -157,7 +161,7 @@ class helpDesk(bpy.types.Operator):
     bl_label = "Spooklight HelpDesk"
     bl_description = "Open the current AddOn Help URL"
 
-    helpURL = bpy.props.StringProperty()
+    helpURL : bpy.props.StringProperty()
 
     def execute(self, context):
         bpy.ops.wm.url_open(url=self.helpURL)
@@ -165,8 +169,8 @@ class helpDesk(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(helpDesk)
+    bpy.utils.register_class(UTILS_OT_help_desk)
 
 
 def unregister():
-    bpy.utils.unregister_class(helpDesk)
+    bpy.utils.unregister_class(UTILS_OT_help_desk)

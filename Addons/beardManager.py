@@ -2,15 +2,14 @@ import bpy
 import time
 from blendshapePropagation import bsPropagation
 from utility import utilities
-from utility import helpDesk
 
 bl_info = {
-   "name": "BeardManager",
+   "name": "BlendShape Baker",
    "author": "Spooklight Studio",
-   "version": (1, 0, 1),
-   "blender": (2, 79, 0),
+   "version": (2, 0, 0),
+   "blender": (2, 80, 0),
    "location": "",
-   "description": "Manage Beard and Mustaches",
+   "description": "Manage Blendshape Baking from a controller to a controlled object",
    "warning": "",
    "wiki_url": "https://drive.google.com/drive/u/0/folders/1iCiJOuvYUDW1UnV51MYD8gh0k5IAbFEq?ogsrc=32",
    "tracker_url": "",
@@ -23,19 +22,19 @@ class beardManSettings(bpy.types.PropertyGroup):
     Variables initialized with the script for customization
     '''
     # Variables
-    enabled = bpy.props.BoolProperty(name="Enabled", default=True)
-    root = bpy.props.StringProperty(name="Root", default=".Empty")
-    cage = bpy.props.StringProperty(name="Deformation Cage", default=".Cage")
-    dynamic = bpy.props.StringProperty(name="Dynamic Object", default=".Dynamic")
-    mustache = bpy.props.StringProperty(name="Mustache Object", default=".Moustache")
-    mouth = bpy.props.StringProperty(name="Mouth Object", default="Kouji_Face.Mouth")
+    enabled : bpy.props.BoolProperty(name="Enabled", default=True)
+    root : bpy.props.StringProperty(name="Root", default=".Empty")
+    cage : bpy.props.StringProperty(name="Deformation Cage", default=".Cage")
+    dynamic : bpy.props.StringProperty(name="Dynamic Object", default=".Dynamic")
+    mustache : bpy.props.StringProperty(name="Mustache Object", default=".Moustache")
+    mouth : bpy.props.StringProperty(name="Mouth Object", default="Kouji_Face.Mouth")
     # Originals Objects
-    originalBeard = bpy.props.StringProperty(name="Beard Root", default="")
-    originalMustache = bpy.props.StringProperty(name="Mustache Root", default="")
-    originalBeardMustache = bpy.props.StringProperty(name="Beard/Mustache Root", default="")
+    originalBeard : bpy.props.StringProperty(name="Beard Root", default="")
+    originalMustache : bpy.props.StringProperty(name="Mustache Root", default="")
+    originalBeardMustache : bpy.props.StringProperty(name="Beard/Mustache Root", default="")
     # Operator Properties
-    isBeard = bpy.props.BoolProperty(name="Beard", default=False)
-    isMustache = bpy.props.BoolProperty(name="Mustache", default=False)
+    isBeard : bpy.props.BoolProperty(name="Beard", default=False)
+    isMustache : bpy.props.BoolProperty(name="Mustache", default=False)
 
 
 class beardManager(bsPropagation):
@@ -131,7 +130,7 @@ class beardManager(bsPropagation):
             result.name = original.name
             print (result.name)
             # Append it in the scene and link it to the root
-            bpy.context.scene.objects.link(result)
+            bpy.context.scene.collection.objects.link(result)
             result.parent = root
 
             # Delete old original
@@ -194,7 +193,7 @@ class beardManager(bsPropagation):
 
 
 # Operators
-class initBeardAndMustache(bpy.types.Operator):
+class BSB_OT_init_beard_and_mustache(bpy.types.Operator):
     bl_idname = "beardmanager.init"
     bl_label = "Beard Manager Initialisation"
     bl_description = "Initialize beard Manager in the scene"
@@ -204,7 +203,7 @@ class initBeardAndMustache(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class updateBeardAndMustacheOp(bpy.types.Operator, beardManager):
+class BSB_OT_update_beard_and_mustache(bpy.types.Operator, beardManager):
     '''
     Update all the Blendshapes of a selected Beard/Mustache Structure
     '''
@@ -231,7 +230,7 @@ class updateBeardAndMustacheOp(bpy.types.Operator, beardManager):
         return {'FINISHED'}
 
 
-class createBeardAndMustacheOp(bpy.types.Operator, beardManager):
+class BSB_OT_create_beard_and_mustache(bpy.types.Operator, beardManager):
     '''
     Copy an original structure of Beard/ Mustache or both
     Apply the selected mesh to it
@@ -285,11 +284,12 @@ class createBeardAndMustacheOp(bpy.types.Operator, beardManager):
 
 
 # UI
-class beardManagerUI(bpy.types.Panel):
-    bl_label = "Beard Manager"
-    bl_space_type = "VIEW_3D"
-    bl_category = "Spooklight"
-    bl_region_type = "TOOLS"
+class BSB_PT_beard_manager_ui(bpy.types.Panel):
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "Custom Tools"
+    bl_label = 'Blendshape Baker'
+    bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(self, context):
@@ -310,7 +310,7 @@ class beardManagerUI(bpy.types.Panel):
         # Variables and tools if scene is correctly configured
         if wrangler is not None and wrangler.enabled is True:
 
-            label = layout.label('Tools')
+            label = layout.label(text='Tools')
             row = layout.row()
             updateButton = row.operator("beardmanager.update", text="update")
             row = layout.row()
@@ -319,7 +319,7 @@ class beardManagerUI(bpy.types.Panel):
             row.prop(wrangler, "isBeard")
             row.prop(wrangler, "isMustache")
 
-            label = layout.label('Variables')
+            label = layout.label(text='Variables')
             box = layout.box()
             row = box.row()
             row.prop(wrangler, "root")
@@ -332,7 +332,7 @@ class beardManagerUI(bpy.types.Panel):
             row = box.row()
             row.prop(wrangler, "mouth")
 
-            label = layout.label('Original Objects')
+            label = layout.label(text='Original Objects')
             box = layout.box()
             row = box.row()
             row.prop(wrangler, "originalBeard")
@@ -347,28 +347,28 @@ class beardManagerUI(bpy.types.Panel):
             row = layout.row()
             initButton = row.operator("beardmanager.init", text="Initialize")
 
-        label = layout.label('Help')
+        label = layout.label(text='Help')
         row = layout.row()
         helpButton = row.operator("help.desk", text="help desk", icon='QUESTION').helpURL = bl_info['wiki_url']
 
 
 
 # Registration
-def register():
-    bpy.utils.register_class(beardManSettings)
-    bpy.utils.register_class(initBeardAndMustache)
-    bpy.utils.register_class(updateBeardAndMustacheOp)
-    bpy.utils.register_class(createBeardAndMustacheOp)
-    bpy.utils.register_class(beardManagerUI)
+classes = (
+    beardManSettings,
+    BSB_OT_init_beard_and_mustache,
+    BSB_OT_update_beard_and_mustache,
+    BSB_OT_create_beard_and_mustache,
+    BSB_PT_beard_manager_ui
+)
 
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
 def unregister():
-    bpy.utils.unregister_class(beardManSettings)
-    bpy.utils.unregister_class(initBeardAndMustache)
-    bpy.utils.unregister_class(updateBeardAndMustacheOp)
-    bpy.utils.unregister_class(createBeardAndMustacheOp)
-    bpy.utils.unregister_class(beardManagerUI)
-
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
 
 if __name__ == '__main__':
     register()
